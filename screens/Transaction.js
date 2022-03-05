@@ -86,10 +86,11 @@ export default class TransactionScreen extends Component {
       if (isEligible) {
         var { bookName, studentName } = this.state;
         this.initiateBookIssue(bookId, studentId, bookName, studentName);
+        Alert.alert("Book issued to the student!");
       }
       // For Android users only
       // ToastAndroid.show("Book issued to the student!", ToastAndroid.SHORT);
-      Alert.alert("Book issued to the student!");
+     
     } else {
       var isEligible = await this.checkStudentEligibilityForBookReturn(
         bookId,
@@ -126,7 +127,7 @@ export default class TransactionScreen extends Component {
   }
   getBookDetails = bookId => {
     bookId = bookId.trim();
-    db.collection("books")
+    db.collection("Books")
       .where("book_id", "==", bookId)
       .get()
       .then(snapshot => {
@@ -140,7 +141,7 @@ export default class TransactionScreen extends Component {
 
   getStudentDetails = studentId => {
     studentId = studentId.trim();
-    db.collection("students")
+    db.collection("Students")
       .where("student_id", "==", studentId)
       .get()
       .then(snapshot => {
@@ -151,15 +152,12 @@ export default class TransactionScreen extends Component {
         });
       });
   };
-
-  
-
   
 
   //Bp
   checkStudentEligibilityForBookReturn = async (bookId, studentId) => {
     const transactionRef = await db
-      .collection("transactions")
+      .collection("Transactions")
       .where("book_id", "==", bookId)
       .limit(1)
       .get();
@@ -182,7 +180,7 @@ export default class TransactionScreen extends Component {
 
   initiateBookIssue = async (bookId, studentId, bookName, studentName) => {
     //add a transaction
-    db.collection("transactions").add({
+    db.collection("Transactions").add({
       student_id: studentId,
       student_name: studentName,
       book_id: bookId,
@@ -191,16 +189,16 @@ export default class TransactionScreen extends Component {
       transaction_type: "issue"
     });
     //change book status
-    db.collection("books")
+    db.collection("Books")
       .doc(bookId)
       .update({
         is_book_available: false
       });
     //change number  of issued books for student
-    db.collection("students")
+    db.collection("Students")
       .doc(studentId)
       .update({
-        number_of_books_issued: firebase.firestore.FieldValue.increment(1)
+        numberOfBooksIssued: firebase.firestore.FieldValue.increment(1)
       });
 
     // Updating local state
@@ -212,7 +210,7 @@ export default class TransactionScreen extends Component {
 
   initiateBookReturn = async (bookId, studentId, bookName, studentName) => {
     //add a transaction
-    db.collection("transactions").add({
+    db.collection("Transactions").add({
       student_id: studentId,
       student_name: studentName,
       book_id: bookId,
@@ -221,16 +219,16 @@ export default class TransactionScreen extends Component {
       transaction_type: "return"
     });
     //change book status
-    db.collection("books")
+    db.collection("Books")
       .doc(bookId)
       .update({
         is_book_available: true
       });
     //change number  of issued books for student
-    db.collection("students")
+    db.collection("Students")
       .doc(studentId)
       .update({
-        number_of_books_issued: firebase.firestore.FieldValue.increment(-1)
+        numberOfBooksIssued: firebase.firestore.FieldValue.increment(-1)
       });
 
     // Updating local state
